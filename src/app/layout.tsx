@@ -1,15 +1,20 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter, Great_Vibes } from "next/font/google";
 import "./globals.css";
+import Footer from "./components/Footer";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+// Define Great Vibes font
+const greatvibes = Great_Vibes({
   subsets: ["latin"],
+  weight: "400",
+  variable: "--font-great-vibes",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+// Define Inter font
+const inter = Inter({
   subsets: ["latin"],
+  weight: ["400", "700"],
+  variable: "--font-inter",
 });
 
 export const metadata: Metadata = {
@@ -25,9 +30,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${greatvibes.variable} ${inter.variable} font-helvetica antialiased`}
       >
         {children}
+        <Footer />
       </body>
     </html>
   );
