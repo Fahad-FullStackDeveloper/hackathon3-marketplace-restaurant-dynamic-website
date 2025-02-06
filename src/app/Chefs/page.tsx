@@ -26,8 +26,7 @@ export default async function Chefs() {
           <Image
             src="/images/HeaderBG.png"
             alt="Header Background"
-            layout="fill"
-            fill
+            fill // Replaces layout="fill"
             style={{ objectFit: "cover" }}
             quality={100}
             priority

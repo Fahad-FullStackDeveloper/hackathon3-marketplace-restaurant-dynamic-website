@@ -1,11 +1,11 @@
 "use client";
 import React, { useState } from "react";
-import Navbar from "../components/Navbar";
+import Navbar from "../../components/Navbar";
 import Image from "next/image";
 import { AiOutlineSearch } from "react-icons/ai";
 import { FaCalendarAlt, FaUserAlt, FaComment } from "react-icons/fa";
 
-const BlogDetails: React.FC = () => {
+const BlogDetail: React.FC = () => {
   // State for form inputs
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -474,4 +474,4 @@ const BlogDetails: React.FC = () => {
   );
 };
 
-export default BlogDetails;
+export default BlogDetail;
