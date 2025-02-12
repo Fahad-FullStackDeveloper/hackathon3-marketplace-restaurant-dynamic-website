@@ -194,7 +194,7 @@ const Navbar = () => {
           <Link href="/account" className="text-base-contrast hover:text-brand">
             <User size={24} />
           </Link>
-          <Link href="/cart" className="text-base-contrast hover:text-brand">
+          <Link href="/ShoppingCart" className="text-base-contrast hover:text-brand">
             <Tote size={24} />
           </Link>
         </div>

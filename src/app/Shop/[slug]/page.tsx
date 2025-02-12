@@ -1,65 +1,125 @@
 "use client";
+
 import Navbar from "../../components/Navbar";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useParams } from "next/navigation";
+import { client } from "@/sanity/lib/client";
+import Image from "next/image";
 import Link from "next/link";
 import {
+  FaFacebook,
   FaHeart,
+  FaInstagram,
+  FaLinkedin,
   FaStar,
   FaStarHalfAlt,
-  FaFacebook,
-  FaInstagram,
   FaTwitter,
-  FaLinkedin,
 } from "react-icons/fa";
-import "@fortawesome/fontawesome-free/css/all.min.css";
-import Image from "next/image";
 
-function ProductPage() {
+const FoodPage = () => {
+  const { slug } = useParams();
+  const [food, setFood] = useState<FoodDetails | null>(null);
   const [quantity, setQuantity] = useState(1);
+  const [cart, setCart] = useState(false);
+  const [wishlist, setWishlist] = useState(false);
+  const [rating, setRating] = useState(0);
 
-  const increaseQuantity = () => setQuantity((prev) => prev + 1);
-  const decreaseQuantity = () => setQuantity((prev) => Math.max(1, prev));
+  useEffect(() => {
+    const fetchFood = async () => {
+      const query = `*[_type == "food" && slug.current == $slug][0]{
+    "imageUrl": image.asset->url,
+    name,
+    price,
+    originalPrice,
+    description,
+    category,
+    tags,
+    available,
+    reviews,
+    "slug": slug.current
+    }`;
+
+      const food: FoodDetails | null = await client.fetch(query, {
+        slug: slug,
+      });
+      setFood(food);
+    };
+    fetchFood();
+  }, [slug]);
+
+  const handleAddToCart = () => {
+    setCart(true);
+  };
+
+  const handleAddToWishlist = () => {
+    setWishlist(true);
+  };
+
+  useEffect(() => {
+    const storedCart = localStorage.getItem("cart");
+    if (storedCart) {
+      setCart(JSON.parse(storedCart));
+    }
+  }, []);
+
+  useEffect(() => {
+    const storedWishlist = localStorage.getItem("wishlist");
+    if (storedWishlist) {
+      setWishlist(JSON.parse(storedWishlist));
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("cart", JSON.stringify(cart));
+  }, [cart]);
+
+  useEffect(() => {
+    localStorage.setItem("wishlist", JSON.stringify(wishlist));
+  }, [wishlist]);
+
+  useEffect(() => {
+    localStorage.setItem("rating", JSON.stringify(rating));
+  }, [rating]);
+
+  useEffect(() => {
+    const storedRating = localStorage.getItem("rating");
+    if (storedRating) {
+      setRating(JSON.parse(storedRating));
+    }
+  }, []);
+
+  if (!food) {
+    return <p className="text-center p-10">Loading...</p>;
+  }
 
   return (
     <div className="container mx-auto max-w-full mb-20">
       <Navbar />
       {/* Header Component */}
-      {/* Header Component */}
-      <header className="relative h-[400px] flex items-center justify-center text-white overflow-hidden">
-        {/* Background Image */}
+      <header className="relative h-[300px] flex items-center justify-center text-white overflow-hidden">
         <div className="absolute inset-0 w-full h-full">
           <Image
             src="/images/HeaderBG.png"
             alt="Header Background"
-            fill // Replaces layout="fill"
-            style={{ objectFit: "cover" }} // Replaces objectFit="cover"
+            fill
+            style={{ objectFit: "cover" }}
             quality={100}
             priority
           />
         </div>
-
-        {/* Overlay to darken the background image (optional) */}
         <div className="absolute inset-0 bg-opacity-10"></div>
-
-        {/* Content */}
         <div className="relative z-10 text-center">
-          {/* Main Heading */}
           <h1 className="text-5xl font-bold mb-4">
             <span className="text-brand">Shop</span>
             <span className="text-white"> Details</span>
-            {/* Changed color to brand color #FF9F0D */}
           </h1>
-
-          {/* Page Route */}
           <p className="text-lg">
             Home <span className="mx-2">{">"}</span>
             <span className="text-brand">Shop details</span>
-            {/* Changed color to brand */}
           </p>
         </div>
       </header>
 
-      {/* Product Section */}
       <div className="container mx-auto grid grid-cols-1 md:grid-cols-12 gap-4 p-4">
         {/* Side Images */}
         <div className="col-span-12 md:col-span-2 flex md:flex-col justify-center gap-4 md:gap-2 pt-4 md:pt-10 pl-4 md:pl-8">
@@ -77,26 +137,22 @@ function ProductPage() {
           )}
         </div>
 
-        {/* Center Image */}
+        {/* Main Image */}
         <div className="col-span-12 md:col-span-4 flex justify-center items-center">
           <Image
-            src={"/images/product1.png"}
-            alt="Main Product"
+            src={food.imageUrl}
+            alt="Main Food"
             width={350}
             height={350}
             className="w-3/4 sm:w-5/6 md:w-11/12 lg:w-full h-auto max-h-96 object-contain"
           />
         </div>
 
-        {/* Product Details */}
         <div className="col-span-12 md:col-span-6 space-y-4">
           <div className="flex flex-wrap items-center justify-between space-x-4">
-            {/* In Stock Section */}
             <span className="bg-brand text-white px-3 py-1 text-sm font-medium rounded mt-4 md:mt-20">
               In Stock
             </span>
-
-            {/* Previous and Next Navigation */}
             <div className="flex items-center space-x-2 mt-2 md:mt-0">
               <button className="text-gray-400 hover:text-gray-500 font-semibold">
                 &larr; Prev
@@ -107,18 +163,14 @@ function ProductPage() {
             </div>
           </div>
           <h1 className="text-lg sm:text-xl md:text-2xl font-bold mt-2">
-            Yummy Chicken Chup
+            {food.name}
           </h1>
 
           <p className="text-gray-600 text-xs sm:text-sm md:text-base">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque
-            diam pellentesque bibendum non dui volutpat fringilla bibendum.
-            Urna, urna, vitae feugiat pretium donec id elementum. Ultrices
-            mattis sed vitae mus risus. Lacus nisi, et ac dapibus sit eu velit
-            in consequat.
+            {food.description}
           </p>
 
-          <h1 className="text-xl sm:text-2xl font-bold text-base">54.00$</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-base">{`USD $${food.price}`}</h1>
           <div className="flex items-center gap-2 flex-wrap">
             <div className="flex text-yellow-500">
               {Array.from({ length: 4 }, (_, index) => (
@@ -126,8 +178,10 @@ function ProductPage() {
               ))}
               <FaStarHalfAlt />
             </div>
-            <span className="text-gray-400 text-xs">| 4.5 ratings</span>
-            <span className="text-blue-500 text-xs">| (22 Reviews) </span>
+            <span className="text-gray-400 text-xs">| 4.5</span>
+            <span className="text-blue-500 text-xs">
+              | {food.reviews} Reviews
+            </span>
           </div>
 
           <div>
@@ -139,20 +193,23 @@ function ProductPage() {
           <div className="flex flex-wrap items-center gap-4">
             <div className="flex items-center border rounded-md">
               <button
-                onClick={decreaseQuantity}
+                onClick={() => setQuantity(quantity > 1 ? quantity - 1 : 1)}
                 className="px-2 sm:px-3 py-1 bg-gray-200 hover:bg-gray-300"
               >
                 -
               </button>
               <span className="px-3 sm:px-5 py-1">{quantity}</span>
               <button
-                onClick={increaseQuantity}
+                onClick={() => setQuantity(quantity + 1)}
                 className="px-2 sm:px-3 py-1 bg-gray-200 hover:bg-gray-300"
               >
                 +
               </button>
             </div>
-            <button className="px-4 sm:px-5 py-2 bg-brand text-white hover:bg-brand-dark flex items-center gap-2">
+            <button
+              onClick={handleAddToCart}
+              className="px-4 sm:px-5 py-2 bg-brand text-white hover:bg-brand-dark flex items-center gap-2"
+            >
               Add to Cart
               <FaHeart />
             </button>
@@ -160,10 +217,11 @@ function ProductPage() {
           <hr className="my-4 sm:my-6 border-t-2 border-gray-300 w-full" />
 
           <div className="space-y-4 text-xs sm:text-sm md:text-base">
-            {/* Add to Wishlist and Compare */}
             <div className="flex items-center space-x-4 sm:space-x-6">
-              <button className="flex space-x-2 text-gray-600 hover:text-gray-800">
-                {/* Wishlist Icon */}
+              <button
+                onClick={handleAddToWishlist}
+                className="flex space-x-2 text-gray-600 hover:text-gray-800"
+              >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="20"
@@ -176,7 +234,6 @@ function ProductPage() {
                 <span>Add to Wishlist</span>
               </button>
               <button className="flex space-x-2 text-gray-500 hover:text-gray-600">
-                {/* Compare Icon */}
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="20"
@@ -190,13 +247,12 @@ function ProductPage() {
               </button>
             </div>
 
-            {/* Category and Tags */}
             <div className="space-y-1">
               <p>
-                <strong>Category:</strong> Pizza
+                <strong>Category:</strong> {food.category}
               </p>
               <p>
-                <strong>Tag:</strong> Our Shop
+                <strong>Tag:</strong> {food.tags.join(", ")}
               </p>
             </div>
 
@@ -239,12 +295,9 @@ function ProductPage() {
         </div>
       </div>
 
-      {/* Divider */}
       <hr className="my-6 border-t-2 border-gray-300 w-full" />
 
-      {/* Description Section */}
       <div className="container mx-auto px-8 py-6">
-        {/* Tabs: Description and Reviews */}
         <div className="flex justify-start items-start space-x-8">
           <h2 className="text-lg md:text-xl font-bold border-b-2 bg-brand text-white px-4 py-2">
             Description
@@ -253,8 +306,6 @@ function ProductPage() {
             Reviews (24)
           </h2>
         </div>
-
-        {/* Description Content */}
 
         <p className="text-xs text-gray-600 my-4 ">
           Nam tristique porta ligula, vel viverra sem eleifend nec. Nulla sed
@@ -275,7 +326,6 @@ function ProductPage() {
           sodales. Suspendisse eu fringilla leo, non aliquet sem.
         </p>
 
-        {/* Key Benefits Section */}
         <div className="text-xs mt-6">
           <h3 className="text-sm md:text-sm font-bold text-gray-600">
             Key Benefits
@@ -291,10 +341,10 @@ function ProductPage() {
           </ul>
         </div>
       </div>
+
       <div className="container mx-auto px-8 py-6 h-16 text-2xl font-bold text-black">
-        <h1>Similar Products</h1>
+        <h1>Similar Foods</h1>
       </div>
-      {/* 4 Product Images */}
       <div className="container mx-auto px-8 py-6 grid grid-cols-1 md:grid-cols-4 gap-0">
         {[
           {
@@ -317,11 +367,11 @@ function ProductPage() {
             image: "/images/product8.png",
           },
           {
-            id: "product6",
+            id: "product9",
             name: "Fresh Lime",
             price: "$38.00",
             discountPrice: "$45.00",
-            image: "/images/product6.png",
+            image: "/images/product9.png",
           },
         ].map((product) => (
           <div
@@ -335,13 +385,13 @@ function ProductPage() {
               height={200}
               className="mx-auto object-contain "
             />
-            <h3 className="text-md font-semibold mt-2">{product.name}</h3>
+            <h3 className="text-md font-semibold mt-2">{food.name}</h3>
             <div className="flex items-center justify-center gap-1">
               <p className="text-brand text-md font-semibold">
-                {product.price}
+                {food.price ? food.price : null}
               </p>
               <p className="text-gray-400 font-bold line-through text-sm">
-                {product.discountPrice ? product.discountPrice : null}
+                {food.originalPrice ? food.originalPrice : null}
               </p>
             </div>
           </div>
@@ -349,6 +399,6 @@ function ProductPage() {
       </div>
     </div>
   );
-}
+};
 
-export default ProductPage;
+export default FoodPage;

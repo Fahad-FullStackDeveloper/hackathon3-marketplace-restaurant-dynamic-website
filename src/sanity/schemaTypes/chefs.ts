@@ -68,6 +68,36 @@ const chefSchema = {
       title: "Updated At",
       description: "Date and time the chef was last updated",
     },
+    {
+      name: "publishedAt",
+      type: "datetime",
+      title: "Published At",
+      description: "Date and time the chef was published",
+    },
+    {
+      name: "deletedAt",
+      type: "datetime",
+      title: "Deleted At",
+      description: "Date and time the chef was deleted",
+    },
+    {
+      name: "restockedAt",
+      type: "datetime",
+      title: "Restocked At",
+      description: "Date and time the chef was restocked",
+    },
+    {
+      name: "restockedQuantity",
+      type: "number",
+      title: "Restocked Quantity",
+      description: "Quantity of chefs restocked",
+    },
+    {
+      name: "restockedPrice",
+      type: "number",
+      title: "Restocked Price",
+      description: "Price of chefs restocked",
+    },
   ],
 };
 

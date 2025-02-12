@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { client } from "@/sanity/lib/client";
+import Navbar from "../components/Navbar";
 
 interface Chef {
   _id: string;
@@ -9,7 +10,7 @@ interface Chef {
   imageUrl: string; // URL
 }
 
-export default async function Chefs() {
+export default async function myChefs() {
   const query = `*[_type == "chef"] {
     _id,
     name,
@@ -21,6 +22,7 @@ export default async function Chefs() {
 
   return (
     <>
+      <Navbar />
       <header className="relative h-[300px] flex items-center justify-center text-white overflow-hidden">
         <div className="absolute inset-0 w-full h-full">
           <Image

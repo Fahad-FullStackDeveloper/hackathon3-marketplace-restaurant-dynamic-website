@@ -1,98 +1,49 @@
 "use client";
 import Navbar from "../components/Navbar";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { client } from "@/sanity/lib/client";
 
-const ShopPage = () => {
-  const [products] = useState([
-    {
-      id: 1,
-      name: "Fresh Lime",
-      price: "$38.00",
-      discountPrice: "$45.00",
-      image: "/images/product6.png",
-    },
-    {
-      id: 2,
-      name: "Chocolate Muffin",
-      price: "$28.00",
-      image: "/images/product7.png",
-    },
-    {
-      id: 3,
-      name: "Burger",
-      price: "$21.00",
-      discountPrice: "$45.00",
-      image: "/images/product8.png",
-    },
-    {
-      id: 4,
-      name: "Country Burger",
-      price: "$45.00",
-      image: "/images/Burger.png",
-    },
-    { id: 5, name: "Drink", price: "$24.00", image: "/images/Drink.png" },
-    {
-      id: 6,
-      name: "Pizza",
-      price: "$10.00",
-      discountPrice: "23.00",
-      image: "/images/Pizza.png",
-    },
-    {
-      id: 7,
-      name: "Cheese Butter",
-      price: "$25.00",
-      image: "/images/Cheese Butter.png",
-    },
-    {
-      id: 8,
-      name: "Sandwiches",
-      price: "$12.00",
-      image: "/images/Sandwiches.png",
-    },
-    {
-      id: 9,
-      name: "Chicken Soup",
-      price: "$45.00",
-      discountPrice: 3,
-      image: "/images/Chicken Soup.png",
-    },
-    {
-      id: 10,
-      name: "Country Burger",
-      price: "$25.00",
-      image: "/images/Burger.png",
-    },
-    {
-      id: 11,
-      name: "Drink",
-      price: "$45.00",
-      discountPrice: "$65.00",
-      image: "/images/Drink.png",
-    },
-    { id: 12, name: "Pizza", price: "$25.00", image: "/images/Pizza.png" },
-    {
-      id: 13,
-      name: "Cheese Butter",
-      price: "$15.00",
-      image: "/images/Cheese Butter.png",
-    },
-    {
-      id: 14,
-      name: "Sandwiches",
-      price: "$15.00",
-      image: "/images/Sandwiches.png",
-    },
-    {
-      id: 15,
-      name: "Chicken soup",
-      price: "$23.00",
-      image: "/images/Chicken Soup.png",
-    },
-  ]);
-  const [price, setPrice] = useState(400);
+interface Food {
+  imageUrl: string; // URL
+  name: string;
+  price: number;
+  originalPrice: number;
+  slug: string;
+}
+
+export default function FoodPage() {
+  const [food, setFood] = useState<Food[]>([]);
+  const [price, setPrice] = useState<number>(500); // Default value
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchFoods = async () => {
+      try {
+        const query = `*[_type == "food"]{
+          "slug": slug.current,
+          "imageUrl": image.asset->url,
+          name,
+          price,
+          originalPrice
+        }`;
+
+        const food: Food[] = await client.fetch(query);
+        setFood(food);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching foods:", error);
+        setError("Failed to fetch foods.");
+        setLoading(false);
+      }
+    };
+    fetchFoods();
+  }, []);
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error}</div>;
 
   return (
     <>
@@ -160,29 +111,30 @@ const ShopPage = () => {
             </div>
           </div>
 
-          {/* Product Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 ">
-            {products.map((product) => (
-              <div key={product.id} className="">
-                {/* Image with increased size */}
-                <Image
-                  src={product.image}
-                  alt={product.name}
-                  width={400} // Increased width
-                  height={300} // Increased height
-                  className=" mb-4"
-                />
-                <h3 className="text-lg font-bold mb-2">{product.name}</h3>
-                <div className="flex items-center gap-4">
-                  {/* Display price and discount in the same line */}
-                  <p className="text-brand font-semibold">{product.price}</p>
-                  {[1, 3, 5, 11].includes(product.id) && (
-                    <p className="text-gray-500 line-through">
-                      {product.discountPrice}
-                    </p>
-                  )}
+          {/* Food Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {food.map((food) => (
+              <Link key={food.slug} href={`/Shop/${food.slug}`} passHref>
+                <div className="cursor-pointer">
+                  {/* Image */}
+                  <Image
+                    src={food.imageUrl}
+                    alt={food.name}
+                    width={400}
+                    height={300}
+                    className="mb-1 w-full h-auto object-cover rounded-lg shadow-lg hover:transition duration-300 transform hover:scale-95"
+                  />
+                  {/* Food Name */}
+                  <h3 className="text-lg font-bold mb-2">{food.name}</h3>
+                  {/* Price & Discount */}
+                  <div className="flex items-center gap-4 mb-4">
+                    <p className="text-brand font-semibold">${food.price}</p>
+                    {food.originalPrice && (
+                      <p className="line-through text-gray-600">${food.originalPrice}</p>
+                    )}
+                  </div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
 
@@ -207,13 +159,13 @@ const ShopPage = () => {
 
         {/* Sidebar */}
         <aside className="w-full lg:w-1/4 bg-white boarder border-gray-300 p-4">
-          {/* Search Product */}
+          {/* Search Food */}
           <div className="flex mb-6 h-10 w-60">
             <div className="flex items-center h-10">
               <input
                 type="text"
                 id="search"
-                placeholder="Search by Product"
+                placeholder="Search by Food"
                 className="w-full p-2 border bg-orange-100"
               />
             </div>
@@ -265,7 +217,7 @@ const ShopPage = () => {
               <input
                 type="range"
                 min="0"
-                max="1000"
+                max="100"
                 value={price}
                 onChange={(e) => setPrice(Number(e.target.value))}
                 className="w-full accent-brand"
@@ -334,9 +286,9 @@ const ShopPage = () => {
             </ul>
           </div>
 
-          {/* Product Tags */}
+          {/* Food Tags */}
           <div>
-            <p className="font-bold mb-2">Product Tags</p>
+            <p className="font-bold mb-2">Food Tags</p>
             <ul className="flex flex-wrap text-sm gap-2">
               {[
                 "Services",
@@ -361,6 +313,4 @@ const ShopPage = () => {
       </div>
     </>
   );
-};
-
-export default ShopPage;
+}
