@@ -4,13 +4,54 @@ import SignUpPage from "@/app/SignUp/page"; // Adjust the import path as needed
 import { useState } from "react";
 import Image from "next/image";
 import Navbar from "../components/Navbar";
+import { useSignIn } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
 
 const SignInPage = () => {
+  const { isLoaded, signIn, setActive } = useSignIn();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showSignUp, setShowSignUp] = useState(false);
+  const [error, setError] = useState("");
+  const router = useRouter();
 
   if (showSignUp) {
     return <SignUpPage />;
   }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!isLoaded) return;
+
+    try {
+      const result = await signIn.create({
+        identifier: email,
+        password,
+      });
+
+      if (result.status === "complete") {
+        await setActive({ session: result.createdSessionId });
+        router.push("/dashboard"); // Redirect after successful sign in
+      }
+    } catch (err: any) {
+      setError(err.message || "An error occurred during sign in");
+    }
+  };
+
+  // Handle OAuth
+  const handleOAuthSignIn = async (provider: "oauth_google" | "oauth_apple") => {
+    if (!isLoaded) return;
+
+    try {
+      await signIn.authenticateWithRedirect({
+        strategy: provider,
+        redirectUrl: "/sso-callback",
+        redirectUrlComplete: "/dashboard",
+      });
+    } catch (err: any) {
+      setError(err.message || `Failed to sign in with ${provider}`);
+    }
+  };
 
   return (
     <>
@@ -58,8 +99,14 @@ const SignInPage = () => {
             Sign In
           </h2>
 
+          {error && (
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
+              {error}
+            </div>
+          )}
+
           {/* Form */}
-          <form className="space-y-4">
+          <form className="space-y-4" onSubmit={handleSubmit}>
             {/* Email Input */}
             <div className="relative">
               <span className="absolute inset-y-0 left-0 flex items-center pl-3">
@@ -68,6 +115,8 @@ const SignInPage = () => {
               <input
                 type="email"
                 placeholder="Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand"
               />
             </div>
@@ -80,6 +129,8 @@ const SignInPage = () => {
               <input
                 type="password"
                 placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand"
               />
             </div>
@@ -100,6 +151,7 @@ const SignInPage = () => {
             <button
               type="submit"
               className="w-full bg-brand text-white py-2 rounded-lg hover:bg-brand-dark transition"
+              disabled={!isLoaded}
             >
               Sign In
             </button>
@@ -124,7 +176,9 @@ const SignInPage = () => {
             {/* Sign In with Google */}
             <button
               type="button"
-              className="w-full flex items-center justify-center pr-24 border border-gray-300 py-2 rounded-lg text-gray-600 hover:bg-gray-100 "
+              onClick={() => handleOAuthSignIn("oauth_google")}
+              className="w-full flex items-center justify-center pr-24 border border-gray-300 py-2 rounded-lg text-gray-600 hover:bg-gray-100"
+              disabled={!isLoaded}
             >
               <Image
                 src="/icons/Google-logo-png-plants.png"
@@ -139,11 +193,13 @@ const SignInPage = () => {
             {/* Sign In with Apple */}
             <button
               type="button"
+              onClick={() => handleOAuthSignIn("oauth_apple")}
               className="w-full flex items-center justify-center pr-24 border border-gray-300 py-2 rounded-lg text-gray-600 hover:bg-gray-100"
+              disabled={!isLoaded}
             >
               <Image
                 src="/icons/apple-logo.png"
-                alt="Google Logo"
+                alt="Apple Logo"
                 width={24}
                 height={24}
                 className="mr-24"

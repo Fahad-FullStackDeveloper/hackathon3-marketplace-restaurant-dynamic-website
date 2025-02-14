@@ -191,7 +191,7 @@ const Navbar = () => {
           <Link href="/search" className="text-base-contrast hover:text-brand">
             <MagnifyingGlass size={24} />
           </Link>
-          <Link href="/account" className="text-base-contrast hover:text-brand">
+          <Link href="/SignIn" className="text-base-contrast hover:text-brand">
             <User size={24} />
           </Link>
           <Link href="/ShoppingCart" className="text-base-contrast hover:text-brand">

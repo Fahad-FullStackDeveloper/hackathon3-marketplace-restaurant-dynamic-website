@@ -221,6 +221,9 @@ export default function FoodPage() {
                 value={price}
                 onChange={(e) => setPrice(Number(e.target.value))}
                 className="w-full accent-brand"
+                id="priceRange"
+                aria-label="Price range filter"
+                title="Adjust price range"
               />
               <div className="flex justify-between items-center text-gray-500">
                 <span>From $0 to ${price}</span>

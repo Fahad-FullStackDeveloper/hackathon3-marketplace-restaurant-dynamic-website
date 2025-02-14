@@ -1,8 +1,89 @@
+'use client';
+
 import React from "react";
+import { useSignUp } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
 import Navbar from "../components/Navbar";
 import Image from "next/image";
 
 const SignUpPage = () => {
+  const { isLoaded, signUp } = useSignUp();
+  const router = useRouter();
+  const [formData, setFormData] = React.useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    password: "",
+  });
+  const [pendingVerification, setPendingVerification] = React.useState(false);
+  const [code, setCode] = React.useState("");
+  const [error, setError] = React.useState("");
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!isLoaded || !signUp) return;
+
+    try {
+      await signUp.create({
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        emailAddress: formData.email,
+        password: formData.password,
+      });
+
+      // Start the email verification process
+      await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
+      setPendingVerification(true);
+    } catch (err: any) {
+      console.error(JSON.stringify(err, null, 2));
+      setError(err.message || "Something went wrong");
+    }
+  };
+
+  const verifyEmail = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!isLoaded || !signUp) return;
+
+    try {
+      const completeSignUp = await signUp.attemptEmailAddressVerification({
+        code,
+      });
+      if (completeSignUp.status === "complete") {
+        // Sign up successful
+        router.push("/"); // Redirect to home page after verification
+      } else {
+        // Sign up not complete yet
+        console.log(JSON.stringify(completeSignUp, null, 2));
+      }
+    } catch (err: any) {
+      console.error(JSON.stringify(err, null, 2));
+      setError(err.message || "Verification failed");
+    }
+  };
+
+  const handleOAuthSignUp = async (strategy: 'oauth_google' | 'oauth_apple') => {
+    if (!isLoaded) return;
+
+    try {
+      await signUp.authenticateWithRedirect({
+        strategy,
+        redirectUrl: '/sso-callback',
+        redirectUrlComplete: '/'
+      });
+    } catch (err: any) {
+      console.error(JSON.stringify(err, null, 2));
+      setError(err.message || "OAuth sign up failed");
+    }
+  };
+
   return (
     <>
       <section className="min-h-screen bg-gray-0 items-center justify-center">
@@ -44,76 +125,121 @@ const SignUpPage = () => {
 
         {/* Sign-Up Container */}
         <div className="container mx-auto mt-20 mb-20 bg-base-text-base-contrast shadow-lg rounded-lg p-8 w-full max-w-md border-brand border">
-          {/* Title */}
-          <h2 className="text-3xl font-bold text-gray-800 text-center mb-6">
-            Sign Up
-          </h2>
+          {error && (
+            <div className="mb-4 p-2 text-red-500 bg-red-100 rounded">
+              {error}
+            </div>
+          )}
 
-          {/* Form */}
-          <form className="space-y-4">
-            {/* Name Input */}
-            <div className="relative">
-              <span className="absolute inset-y-0 left-0 flex items-center pl-3">
-                <i className="fas fa-user text-gray-400"></i>
-              </span>
+          {!pendingVerification ? (
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {/* First Name Input */}
+              <div className="relative">
+                <span className="absolute inset-y-0 left-0 flex items-center pl-3">
+                  <i className="fas fa-user text-gray-400"></i>
+                </span>
+                <input
+                  type="text"
+                  name="firstName"
+                  placeholder="First Name"
+                  value={formData.firstName}
+                  onChange={handleInputChange}
+                  className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand"
+                  required
+                />
+              </div>
+
+              {/* Last Name Input */}
+              <div className="relative">
+                <span className="absolute inset-y-0 left-0 flex items-center pl-3">
+                  <i className="fas fa-user text-gray-400"></i>
+                </span>
+                <input
+                  type="text"
+                  name="lastName"
+                  placeholder="Last Name"
+                  value={formData.lastName}
+                  onChange={handleInputChange}
+                  className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand"
+                  required
+                />
+              </div>
+
+              {/* Email Input */}
+              <div className="relative">
+                <span className="absolute inset-y-0 left-0 flex items-center pl-3">
+                  <i className="fas fa-envelope text-gray-400"></i>
+                </span>
+                <input
+                  type="email"
+                  name="email"
+                  placeholder="Email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand"
+                  required
+                />
+              </div>
+
+              {/* Password Input */}
+              <div className="relative">
+                <span className="absolute inset-y-0 left-0 flex items-center pl-3">
+                  <i className="fas fa-lock text-gray-400"></i>
+                </span>
+                <input
+                  type="password"
+                  name="password"
+                  placeholder="Password"
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand"
+                  required
+                />
+              </div>
+
+              {/* Remember Me */}
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="remember"
+                  className="w-4 h-4 text-brand border-gray-300 rounded focus:ring-brand"
+                />
+                <label htmlFor="remember" className="ml-2 text-sm text-gray-600">
+                  Remember me?
+                </label>
+              </div>
+
+              <button
+                type="submit"
+                className="w-full bg-brand text-base-contrast py-2 rounded-lg hover:bg-[#e88e0a] transition"
+              >
+                Sign Up
+              </button>
+            </form>
+          ) : (
+            <form onSubmit={verifyEmail} className="space-y-4">
+              <h2 className="text-xl font-semibold text-center">
+                Verify your email
+              </h2>
+              <p className="text-center text-gray-600">
+                We've sent a verification code to your email
+              </p>
               <input
                 type="text"
-                placeholder="Name"
-                className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand"
+                placeholder="Enter verification code"
+                value={code}
+                onChange={(e) => setCode(e.target.value)}
+                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand"
+                required
               />
-            </div>
-
-            {/* Email Input */}
-            <div className="relative">
-              <span className="absolute inset-y-0 left-0 flex items-center pl-3">
-                <i className="fas fa-envelope text-gray-400"></i>
-              </span>
-              <input
-                type="email"
-                placeholder="Email"
-                className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand"
-              />
-            </div>
-
-            {/* Password Input */}
-            <div className="relative">
-              <span className="absolute inset-y-0 left-0 flex items-center pl-3">
-                <i className="fas fa-lock text-gray-400"></i>
-              </span>
-              <input
-                type="password"
-                placeholder="Password"
-                className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand"
-              />
-            </div>
-
-            {/* Remember Me */}
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="remember"
-                className="w-4 h-4 text-brand border-gray-300 rounded focus:ring-brand"
-              />
-              <label htmlFor="remember" className="ml-2 text-sm text-gray-600">
-                Remember me?
-              </label>
-            </div>
-
-            {/* Sign-Up Button */}
-            <button
-              type="submit"
-              className="w-full bg-brand text-base-contrast py-2 rounded-lg hover:bg-[#e88e0a] transition"
-            >
-              Sign Up
-            </button>
-
-            {/* Forgot Password */}
-            <p className="text-right text-sm text-gray-600">
-              <a href="#" className="text-brand hover:underline">
-                Forgot password?
-              </a>
-            </p>
-          </form>
+              <button
+                type="submit"
+                className="w-full bg-brand text-base-contrast py-2 rounded-lg hover:bg-[#e88e0a] transition"
+              >
+                Verify Email
+              </button>
+            </form>
+          )}
 
           {/* Divider */}
           <div className="flex items-center my-6">
@@ -127,7 +253,8 @@ const SignUpPage = () => {
             {/* Sign Up with Google */}
             <button
               type="button"
-              className="w-full flex items-center justify-center pr-24 border border-gray-300 py-2 rounded-lg text-gray-600 hover:bg-gray-100 "
+              onClick={() => handleOAuthSignUp('oauth_google')}
+              className="w-full flex items-center justify-center pr-24 border border-gray-300 py-2 rounded-lg text-gray-600 hover:bg-gray-100"
             >
               <Image
                 src="/icons/Google-logo-png-plants.png"
@@ -142,11 +269,12 @@ const SignUpPage = () => {
             {/* Sign Up with Apple */}
             <button
               type="button"
+              onClick={() => handleOAuthSignUp('oauth_apple')}
               className="w-full flex items-center justify-center pr-24 border border-gray-300 py-2 rounded-lg text-gray-600 hover:bg-gray-100"
             >
               <Image
                 src="/icons/apple-logo.png"
-                alt="Google Logo"
+                alt="Apple Logo"
                 width={24}
                 height={24}
                 className="mr-24"
