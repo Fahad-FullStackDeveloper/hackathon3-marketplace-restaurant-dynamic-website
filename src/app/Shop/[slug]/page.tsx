@@ -110,12 +110,12 @@ const FoodPage = () => {
         <div className="absolute inset-0 bg-opacity-10"></div>
         <div className="relative z-10 text-center">
           <h1 className="text-5xl font-bold mb-4">
-            <span className="text-brand">Shop</span>
-            <span className="text-white"> Details</span>
+            <span className="text-brand">Food</span>
+            <span className="text-white"> Detail</span>
           </h1>
           <p className="text-lg">
             Home <span className="mx-2">{">"}</span>
-            <span className="text-brand">Shop details</span>
+            Shop {">"} <span className="text-brand">Food Detail</span>
           </p>
         </div>
       </header>

@@ -13,7 +13,10 @@ interface Chef {
   image: string;
   description: string;
   available: boolean;
-  slug: string;
+  slug: {
+    current: string;
+  };
+  [Symbol.toStringTag]: string;
 }
 
 export default async function ChefPage({
@@ -21,6 +24,10 @@ export default async function ChefPage({
 }: {
   params: { slug: string };
 }) {
+  if (!params.slug) {
+    return notFound();
+  }
+
   try {
     const slugQuery = `*[_type == "chef" && slug.current == $slug][0]{
       _id,
@@ -31,16 +38,20 @@ export default async function ChefPage({
       image,
       description,
       available,
-      "slug": slug.current
+      slug
     }`;
 
-    const chef: Chef | null = await client.fetch(slugQuery, {
+    const chef: Chef = await client.fetch(slugQuery, {
       slug: params.slug,
+    }).then((result: Chef | null) => {
+      if (!result) {
+        throw new Error('Chef not found');
+      }
+      return {
+        ...result,
+        [Symbol.toStringTag]: 'Chef'
+      };
     });
-
-    if (!chef) {
-      return notFound();
-    }
 
     return (
       <>
@@ -60,11 +71,11 @@ export default async function ChefPage({
           <div className="relative z-10 text-center">
             <h1 className="text-5xl font-bold mb-4">
               <span className="text-brand">Chef</span>
-              <span className="text-white"> Details</span>
+              <span className="text-white"> Detail</span>
             </h1>
             <p className="text-lg">
               Home <span className="mx-2">{">"}</span>
-              <span className="text-brand">Chef Details</span>
+              Chef {">"}<span className="text-brand"> Chef Detail</span>
             </p>
           </div>
         </header>
@@ -122,5 +133,8 @@ export default async function ChefPage({
   } catch (error) {
     console.error("Error fetching chef data:", error);
     return notFound();
+  } finally {
+    // Clean up any resources if needed
+    // For example, close connections or clear temporary data
   }
 }

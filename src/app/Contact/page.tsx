@@ -106,7 +106,7 @@ const Contact = () => {
             Phone: <span className="text-brand">+1 (234) 567-890</span>
           </p>
           <p className="text-lg mt-2">
-            Email: <span className="text-brand">contact@fooddelight.com</span>
+            Email: <span className="text-brand">contact@foodtuck.com</span>
           </p>
         </section>
       </main>
