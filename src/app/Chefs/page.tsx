@@ -5,7 +5,6 @@ import Navbar from "../components/Navbar";
 import React from "react";
 
 interface Chef {
-  _id: string;
   name: string;
   slug: string;
   imageUrl?: string; // URL
@@ -14,7 +13,6 @@ interface Chef {
 export default async function MyChefs(): Promise<React.ReactElement> {
   try {
     const query = `*[_type == "chef"] {
-      _id,
       name,
       "slug": slug.current,
       "imageUrl": image.asset->url
@@ -62,7 +60,7 @@ export default async function MyChefs(): Promise<React.ReactElement> {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
               {chefs.map((chef) => (
-                <Link href={`/Chefs/${chef.slug}`} key={chef._id}>
+                <Link href={`/Chefs/${chef.slug}`} key={chef.slug}>
                   <div className="flex flex-col items-center bg-white p-2 rounded-lg shadow-lg hover:transition duration-300 transform hover:scale-95">
                     <Image
                       src={chef.imageUrl || "/placeholder.svg"}
