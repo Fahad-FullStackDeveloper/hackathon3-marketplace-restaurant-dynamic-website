@@ -39,12 +39,11 @@ const SignUpPage = () => {
         password: formData.password,
       });
 
-      // Start the email verification process
       await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
       setPendingVerification(true);
-    } catch (err: any) {
+    } catch (err) {
       console.error(JSON.stringify(err, null, 2));
-      setError(err.message || "Something went wrong");
+      setError(err instanceof Error ? err.message : "Something went wrong");
     }
   };
 
@@ -57,15 +56,13 @@ const SignUpPage = () => {
         code,
       });
       if (completeSignUp.status === "complete") {
-        // Sign up successful
-        router.push("/"); // Redirect to home page after verification
+        router.push("/");
       } else {
-        // Sign up not complete yet
         console.log(JSON.stringify(completeSignUp, null, 2));
       }
-    } catch (err: any) {
+    } catch (err) {
       console.error(JSON.stringify(err, null, 2));
-      setError(err.message || "Verification failed");
+      setError(err instanceof Error ? err.message : "Verification failed");
     }
   };
 
@@ -78,9 +75,9 @@ const SignUpPage = () => {
         redirectUrl: '/sso-callback',
         redirectUrlComplete: '/'
       });
-    } catch (err: any) {
+    } catch (err) {
       console.error(JSON.stringify(err, null, 2));
-      setError(err.message || "OAuth sign up failed");
+      setError(err instanceof Error ? err.message : "OAuth sign up failed");
     }
   };
 
@@ -222,7 +219,7 @@ const SignUpPage = () => {
                 Verify your email
               </h2>
               <p className="text-center text-gray-600">
-                We've sent a verification code to your email
+                We&apos;ve sent a verification code to your email
               </p>
               <input
                 type="text"

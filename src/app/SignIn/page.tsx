@@ -31,10 +31,11 @@ const SignInPage = () => {
 
       if (result.status === "complete") {
         await setActive({ session: result.createdSessionId });
-        router.push("/dashboard"); // Redirect after successful sign in
+        router.push("/dashboard");
       }
-    } catch (err: any) {
-      setError(err.message || "An error occurred during sign in");
+    } catch (err: unknown) {
+      const error = err as Error;
+      setError(error.message || "An error occurred during sign in");
     }
   };
 
@@ -48,8 +49,9 @@ const SignInPage = () => {
         redirectUrl: "/sso-callback",
         redirectUrlComplete: "/dashboard",
       });
-    } catch (err: any) {
-      setError(err.message || `Failed to sign in with ${provider}`);
+    } catch (err: unknown) {
+      const error = err as Error;
+      setError(error.message || `Failed to sign in with ${provider}`);
     }
   };
 
