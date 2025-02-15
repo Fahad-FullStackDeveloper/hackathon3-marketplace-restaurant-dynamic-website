@@ -1,8 +1,11 @@
+"use client";
+
 import Navbar from "@/app/components/Navbar";
 import { client } from "@/sanity/lib/client";
 import { urlForImage } from "@/sanity/lib/image";
 import Image from "next/image";
-import { notFound } from "next/navigation";
+import { notFound, useParams } from "next/navigation";
+import { useState, useEffect } from "react";
 
 interface Chef {
   name: string;
@@ -39,17 +42,32 @@ async function getChef(slug: string): Promise<Chef | null> {
   }
 }
 
-export default async function ChefDetailPage({
-  params,
-}: {
-  params: { slug: string };
-}) {
-  // Ensure params is resolved before accessing slug
-  const slug = await Promise.resolve(params.slug);
-  const chef = await getChef(slug);
+export default function ChefDetailPage() {
+  const params = useParams();
+  const slug = params.slug as string;
+  const [chef, setChef] = useState<Chef | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadChef() {
+      const chefData = await getChef(slug);
+      setChef(chefData);
+      setLoading(false);
+      
+      if (!chefData) {
+        notFound();
+      }
+    }
+    
+    loadChef();
+  }, [slug]);
+
+  if (loading) {
+    return <div>Loading...</div>; // Add appropriate loading state
+  }
 
   if (!chef) {
-    notFound();
+    return null;
   }
 
   return (
@@ -130,12 +148,3 @@ export default async function ChefDetailPage({
   );
 }
 
-// Generate static params for all chef pages at build time
-export async function generateStaticParams() {
-  const query = `*[_type == "chef"]{ slug { current } }`;
-  const chefs = await client.fetch(query);
-
-  return chefs.map((chef: { slug: { current: string } }) => ({
-    slug: chef.slug.current,
-  }));
-}
