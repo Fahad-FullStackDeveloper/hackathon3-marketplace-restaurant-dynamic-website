@@ -7,6 +7,19 @@ interface Food {
   originalPrice: number;
 }
 
+interface FoodDetails {
+  imageUrl: string;
+  name: string;
+  price: number;
+  originalPrice: number;
+  description: string;
+  category: string;
+  tags: string[];
+  available: boolean;
+  reviews: number;
+  slug: string;
+}
+
 interface FoodDetails extends Food {
   name: string;
   slug: string;
@@ -16,6 +29,10 @@ interface FoodDetails extends Food {
   tags: string[];
   category: string;
   reviews?: number;
+}
+
+interface FoodPageProps {
+  food: FoodDetails;
 }
 
 interface Chef {
@@ -80,82 +97,4 @@ interface ProductDetails extends Product {
   tags: string[];
   available: boolean;
   reviews?: number;
-}
-
-interface ProductPageProps {
-  product: ProductDetails;
-}
-
-interface ChefPageProps {
-  chef: Chef;
-}
-
-interface CartPageProps {
-  cartItems: CartItem[];
-}
-
-interface CheckoutPageProps {
-  cartItems: CartItem[];
-}
-
-interface OrderPageProps {
-  order: Order;
-}
-
-interface ReviewPageProps {
-  reviews: Review[];
-}
-
-interface UserPageProps {
-  user: User;
-}
-
-interface LoginPageProps {
-  user: User;
-}
-
-interface SignUpPageProps {
-  user: User;
-}
-
-interface AdminPageProps {
-  user: User;
-}
-
-interface DashboardPageProps {
-  user: User;
-}
-
-interface NavbarProps {
-  cartItems: CartItem[];
-}
-
-interface FooterProps {
-  chef: Chef;
-}
-
-interface HomeProps {
-  products: Product[];
-  chefs: Chef[];
-}
-
-interface PageProps {
-  product: ProductDetails;
-  chef: Chef;
-  cartItems: CartItem[];
-  order: Order;
-  reviews: Review[];
-  user: User;
-}
-
-interface ShopPageProps {
-  products: Product[];
-}
-
-interface AboutPageProps {
-  chef: Chef;
-}
-
-interface ContactPageProps {
-  chef: Chef;
 }

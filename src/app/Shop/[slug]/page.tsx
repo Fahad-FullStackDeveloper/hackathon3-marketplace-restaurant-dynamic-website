@@ -16,13 +16,60 @@ import {
   FaTwitter,
 } from "react-icons/fa";
 
+interface CartItem extends FoodDetails {
+  quantity: number;
+}
+
 const FoodPage = () => {
   const { slug } = useParams();
   const [food, setFood] = useState<FoodDetails | null>(null);
   const [quantity, setQuantity] = useState(1);
-  const [cart, setCart] = useState(false);
-  const [wishlist, setWishlist] = useState(false);
-  const [rating, setRating] = useState(0);
+  const [addToCart, getCartCount] = useState();
+  const [cartCount, setCartCount] = useState(0);
+  const [cartItems, setCartItems] = useState<CartItem[]>(() => {
+    const storedCart = localStorage.getItem("cart");
+    return storedCart ? JSON.parse(storedCart) : [];
+  });
+  const [getCartCount] = useState(() => {
+    const cartCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
+    return cartCount;
+  });
+  useEffect(() => {
+    setCartItems(JSON.parse(localStorage.getItem("cart") || "[]"));
+  }, []);
+  useEffect(() => {
+    localStorage.setItem("cart", JSON.stringify(cartItems));
+  }, [cartItems]);
+  const handleIncrementQuantity = () => {
+    setQuantity((prevQuantity) => prevQuantity + 1);
+  };
+  const handleDecrementQuantity = () => {
+    if (quantity > 1) {
+      setQuantity((prevQuantity) => prevQuantity - 1);
+    }
+  };
+  const handleAddReview = (rating: number, comment: string) => {
+    if (food) {
+      const updatedFood = {...food, reviews: [...food.reviews, { rating, comment }] };
+      setFood(updatedFood);
+    }
+  };
+
+  const [wishlistItems, setWishlistItems] = useState<CartItem[]>(() => {
+    const storedWishlist = localStorage.getItem("wishlist");
+    return storedWishlist ? JSON.parse(storedWishlist) : [];
+  });
+
+  useEffect(() => {
+    setCartCount(getCartCount());
+  }, [getCartCount]);
+
+  const handleAddToCart = () => {
+    if (food) {
+      addToCart({ ...food, quantity });
+      setCartCount(getCartCount());
+    }
+  };
 
   useEffect(() => {
     const fetchFood = async () => {
@@ -47,46 +94,25 @@ const FoodPage = () => {
     fetchFood();
   }, [slug]);
 
+  useEffect(() => {
+    localStorage.setItem("cart", JSON.stringify(cartItems));
+  }, [cartItems]);
+
+  useEffect(() => {
+    localStorage.setItem("wishlist", JSON.stringify(wishlistItems));
+  }, [wishlistItems]);
+
   const handleAddToCart = () => {
-    setCart(true);
+    if (food) {
+      setCartItems([...cartItems, { ...food, quantity }]);
+    }
   };
 
   const handleAddToWishlist = () => {
-    setWishlist(true);
+    if (food) {
+      setWishlistItems([...wishlistItems, { ...food, quantity }]);
+    }
   };
-
-  useEffect(() => {
-    const storedCart = localStorage.getItem("cart");
-    if (storedCart) {
-      setCart(JSON.parse(storedCart));
-    }
-  }, []);
-
-  useEffect(() => {
-    const storedWishlist = localStorage.getItem("wishlist");
-    if (storedWishlist) {
-      setWishlist(JSON.parse(storedWishlist));
-    }
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem("cart", JSON.stringify(cart));
-  }, [cart]);
-
-  useEffect(() => {
-    localStorage.setItem("wishlist", JSON.stringify(wishlist));
-  }, [wishlist]);
-
-  useEffect(() => {
-    localStorage.setItem("rating", JSON.stringify(rating));
-  }, [rating]);
-
-  useEffect(() => {
-    const storedRating = localStorage.getItem("rating");
-    if (storedRating) {
-      setRating(JSON.parse(storedRating));
-    }
-  }, []);
 
   if (!food) {
     return <p className="text-center p-10">Loading...</p>;
@@ -94,7 +120,7 @@ const FoodPage = () => {
 
   return (
     <div className="container mx-auto max-w-full mb-20">
-      <Navbar />
+      <Navbar cartCount={cartCount} />
       {/* Header Component */}
       <header className="relative h-[300px] flex items-center justify-center text-white overflow-hidden">
         <div className="absolute inset-0 w-full h-full">
@@ -385,13 +411,13 @@ const FoodPage = () => {
               height={200}
               className="mx-auto object-contain "
             />
-            <h3 className="text-md font-semibold mt-2">{food.name}</h3>
+            <h3 className="text-md font-semibold mt-2">{product.name}</h3>
             <div className="flex items-center justify-center gap-1">
               <p className="text-brand text-md font-semibold">
-                {food.price ? food.price : null}
+                {product.price}
               </p>
               <p className="text-gray-400 font-bold line-through text-sm">
-                {food.originalPrice ? food.originalPrice : null}
+                {product.discountPrice}
               </p>
             </div>
           </div>

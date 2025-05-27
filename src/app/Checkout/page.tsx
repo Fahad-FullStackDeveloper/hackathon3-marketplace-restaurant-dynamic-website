@@ -1,10 +1,52 @@
 "use client";
-// import React, { useState } from "react";
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import Navbar from "../components/Navbar";
 
-const ShippingPage = () => {
+interface CartItem {
+  id: number;
+  name: string;
+  price: number;
+  quantity: number;
+  image: string;
+  weight: string;
+}
+
+const checkout = () => {
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [wishlistItems, setWishlistItems] = useState<CartItem[]>([]);
+  // const [fullName, setFullName] = useState("");
+  // const [email, setEmail] = useState("");
+  // const [phone, setPhone] = useState("");
+  // const [deliveryDate, setDeliveryDate] = useState("");
+  // const [deliveryTime, setDeliveryTime] = useState("");
+  // const [orderNotes, setOrderNotes] = useState("");
+  // const [paymentStatus, setPaymentStatus] = useState("");
+  // const [paymentMethod, setPaymentMethod] = useState("");
+  // const [address, setAddress] = useState("");
+  // const [paymentDetails, setPaymentDetails] = useState("");
+  // const [error, setError] = useState("");
+  // const [success, setSuccess] = useState(false);
+  // const [loading, setLoading] = useState(false); 
+  // const [orderPlaced, setOrderPlaced] = useState(false);
+  // const [paymentMethod, setPaymentMethod] = useState("");
+  // const [address, setAddress] = useState("");
+  // const [paymentDetails, setPaymentDetails] = useState("");
+  // const [error, setError] = useState("");
+  // const [success, setSuccess] = useState(false);
+
+  const handleRemoveFromCart = (id: number) => {
+    const updatedCart = cartItems.filter((item) => item.id !== id);
+    setCartItems(updatedCart);
+    localStorage.setItem("cart", JSON.stringify(updatedCart));
+  };
+
+  const handleAddToWishlist = (item: CartItem) => {
+    setWishlistItems([...wishlistItems, item]);
+    localStorage.setItem("wishlist", JSON.stringify([...wishlistItems, item]));
+  };
+
   return (
     <section className="min-h-screen bg-gray-0">
       <Navbar />
@@ -55,7 +97,7 @@ const ShippingPage = () => {
             <InputField label="Phone Number" />
             <InputField label="Company" />
             <Link
-              href="/shopping_cart"
+              href="/ShoppingCart"
               className="border border-brand text-[#4F4F4F] px-32 py-3 w-full hover:bg-brand-dark mt-4"
             >
               Back to Cart
@@ -100,47 +142,51 @@ const ShippingPage = () => {
           <h3 className="text-2xl font-semibold text-black mb-4">Receipt</h3>
 
           {/* Receipt Items Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-6">
-            <div className="flex items-center space-x-4 ">
-              <Image
-                src="/images/chicken-tikka.png" // Replace with your image path
-                alt="Chicken Tikka Kabab"
-                width={100}
-                height={100}
-                className="rounded-md"
-              />
-              <div>
-                <p className="text-lg font-semibold text-black w-40">
-                  1 Chicken Tikka Kabab
-                </p>
-                <p className="text-gray-600">150 gm net</p>
-                <p className="font-semibold text-gray-800">$65.00</p>
+          {cartItems.map((item) => (
+            <div
+              key={item.id}
+              className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-6"
+            >
+              <div className="flex items-center space-x-4">
+                <Image
+                  src={item.image}
+                  alt={item.name}
+                  width={100}
+                  height={100}
+                  className="rounded-md"
+                />
+                <div>
+                  <p className="text-lg font-semibold text-black w-40">
+                    {item.quantity} {item.name}
+                  </p>
+                  <p className="text-gray-600">{item.weight}</p>
+                  <p className="font-semibold text-gray-800">${item.price}</p>
+                </div>
               </div>
+              <button
+                onClick={() => handleRemoveFromCart(item.id)}
+                className="text-red-500"
+              >
+                Remove
+              </button>
+              <button
+                onClick={() => handleAddToWishlist(item)}
+                className="text-blue-500"
+              >
+                Add to Wishlist
+              </button>
             </div>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-6">
-            <div className="flex items-center space-x-4">
-              <Image
-                src="/images/chicken-tikka.png" // Replace with your image path
-                alt="Chicken Tikka Kabab"
-                width={100}
-                height={100}
-                className="rounded-md"
-              />
-              <div>
-                <p className="text-lg font-semibold text-black  w-40">
-                  1 Chicken Tikka Kabab
-                </p>
-                <p className="text-gray-600">150 gm net</p>
-                <p className="font-semibold text-gray-800">$65.00</p>
-              </div>
-            </div>
-          </div>
+          ))}
 
           {/* Receipt Summary */}
           <div className="flex justify-between text-gray-800 mb-2">
             <p>Sub-Total</p>
-            <p>$ 130.00</p>
+            <p>
+              $
+              {cartItems
+                .reduce((acc, item) => acc + item.price * item.quantity, 0)
+                .toFixed(2)}
+            </p>
           </div>
           <div className="flex justify-between text-gray-800 mb-2">
             <p>Shipping</p>
@@ -148,15 +194,39 @@ const ShippingPage = () => {
           </div>
           <div className="flex justify-between text-gray-800 mb-2">
             <p>Discount -25%</p>
-            <p>$ 32.50</p>
+            <p>
+              ${" "}
+              {(
+                cartItems.reduce(
+                  (acc, item) => acc + item.price * item.quantity,
+                  0
+                ) * 0.25
+              ).toFixed(2)}
+            </p>
           </div>
           <div className="flex justify-between text-gray-800 mb-2">
             <p>Tax +30%</p>
-            <p>$ 29.25</p>
+            <p>
+              ${" "}
+              {(
+                cartItems.reduce(
+                  (acc, item) => acc + item.price * item.quantity,
+                  0
+                ) * 0.3
+              ).toFixed(2)}
+            </p>
           </div>
           <div className="flex justify-between text-black font-semibold mb-4">
             <p>Total</p>
-            <p>$ 126.75</p>
+            <p>
+              ${" "}
+              {(
+                cartItems.reduce(
+                  (acc, item) => acc + item.price * item.quantity,
+                  0
+                ) * 1.05
+              ).toFixed(2)}
+            </p>
           </div>
 
           {/* Place Order Button */}
@@ -201,12 +271,84 @@ const InputField = ({
 const CountryDropdown = ({ label }: { label: string }) => (
   <div className="mb-4">
     <label className="block text-black font-semibold mb-2">{label}</label>
-    <select className="w-full px-4 py-4 border border-gray-300focus:outline-none focus:ring-2 focus:ring-orange-400">
+    <select
+      aria-label={label}
+      className="w-full px-4 py-4 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-400"
+    >
       <option value="">Select Country</option>
-      <option value="Pakistan">Pakistan</option>
-      <option value="India">India</option>
-      <option value="Bangladesh">Bangladesh</option>
-      <option value="Sri Lanka">Sri Lanka</option>
+      <option value="Pakistan">
+        Pakistan
+        <option value="">Select City</option>
+        <option value="Karachi">Karachi</option>
+        <option value="Faisalabad">Faisalabad</option>
+        <option value="Gujranwala">Gujranwala</option>
+        <option value="Hyderabad">Hyderabad</option>
+        <option value="Sindh">Sindh</option>
+        <option value="Sialkot">Sialkot</option>
+        <option value="Sukkur">Sukkur</option>
+        <option value="Gujrat">Gujrat</option>
+        <option value="Bahawalpur">Bahawalpur</option>
+        <option value="Jhang">Jhang</option>
+        <option value="Sheikhupura">Sheikhupura</option>
+        <option value="Kasur">Kasur</option>
+        <option value="Rahim Yar Khan">Rahim Yar Khan</option>
+        <option value="Khanewal">Khanewal</option>
+        <option value="Larkana">Larkana</option>
+        <option value="Mardan">Mardan</option>
+        <option value="Khuzdar">Khuzdar</option>
+        <option value="Kohat">Kohat</option>
+        <option value="Moroj">Moroj</option>
+        <option value="Nawabshah">Nawabshah</option>
+        <option value="Okara">Okara</option>
+        <option value="Balochistan">Balochistan</option>
+        <option value="Punjab">Punjab</option>
+        <option value="Khyber Pakhtunkhwa">Khyber Pakhtunkhwa</option>
+        <option value="Sindhupalcherry">Sindhupalcherry</option>
+        <option value="Gujarat">Gujarat</option>
+        <option value="Kashmir">Kashmir</option>
+        <option value="Gilgit-Baltistan">Gilgit-Baltistan</option>
+        <option value="AJK">AJK</option>
+        <option value="Islamabad Capital Territory">
+          Islamabad Capital Territory
+        </option>
+        <option value="Bahawalpur">Bahawalpur</option>
+        <option value="Lahore">Lahore</option>
+        <option value="Islamabad">Islamabad</option>
+        <option value="Rawalpindi">Rawalpindi</option>
+        <option value="Peshawar">Peshawar</option>
+        <option value="Quetta">Quetta</option>
+        <option value="Sargodha">Sargodha</option>
+        <option value="Multan">Multan</option>
+        <option value="Faisalabad">Faisalabad</option>
+      </option>
+      <option value="United States">
+        United States
+        <option value="">Select State</option>
+        <option value="New York">New York</option>
+        <option value="California">California</option>
+        <option value="Texas">Texas</option>
+        <option value="Florida">Florida</option>
+        <option value="Ohio">Ohio</option>
+        <option value="Illinois">Illinois</option>
+        <option value="Mississippi">Mississippi</option>
+        <option value="Tennessee">Tennessee</option>
+        <option value="Maryland">Maryland</option>
+        <option value="Virginia">Virginia</option>
+        <option value="North Carolina">North Carolina</option>
+        <option value="Georgia">Georgia</option>
+        <option value="Alabama">Alabama</option>
+        <option value="Kentucky">Kentucky</option>
+        <option value="Indiana">Indiana</option>
+        <option value="Michigan">Michigan</option>
+        <option value="Ohio">Ohio</option>
+        <option value="Pennsylvania">Pennsylvania</option>
+        <option value="New Jersey">New Jersey</option>
+        <option value="Massachusetts">Massachusetts</option>
+        <option value="Washington">Washington</option>
+        <option value="Oregon">Oregon</option>
+        <option value="Colorado">Colorado</option>
+        <option value="Arizona">Arizona</option>
+      </option>
     </select>
   </div>
 );
@@ -215,14 +357,21 @@ const CountryDropdown = ({ label }: { label: string }) => (
 const CityDropdown = ({ label }: { label: string }) => (
   <div className="mb-4">
     <label className="block text-black font-semibold mb-2">{label}</label>
-    <select className="w-full px-4 py-4 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-400">
+    <select
+      aria-label={label}
+      className="w-full px-4 py-4 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-400"
+    >
       <option value="">Select City</option>
       <option value="Karachi">Karachi</option>
       <option value="Lahore">Lahore</option>
       <option value="Islamabad">Islamabad</option>
       <option value="Rawalpindi">Rawalpindi</option>
+      <option value="Peshawar">Peshawar</option>
+      <option value="Quetta">Quetta</option>
+      <option value="Multan">Multan</option>
+      <option value="Faisalabad">Faisalabad</option>
     </select>
   </div>
 );
 
-export default ShippingPage;
+export default checkout;

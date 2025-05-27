@@ -13,11 +13,24 @@ interface Food {
   slug: string;
 }
 
+interface CartItem extends Food {
+  quantity: number;
+}
+
 export default function FoodPage() {
   const [food, setFood] = useState<Food[]>([]);
   const [price, setPrice] = useState<number>(500); // Default value
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [cartItems, setCartItems] = useState<CartItem[]>(() => {
+    const storedCart = localStorage.getItem("cart");
+    return storedCart ? JSON.parse(storedCart) : [];
+  });
+
+  const [wishlistItems, setWishlistItems] = useState<CartItem[]>(() => {
+    const storedWishlist = localStorage.getItem("wishlist");
+    return storedWishlist ? JSON.parse(storedWishlist) : [];
+  });
 
   useEffect(() => {
     const fetchFoods = async () => {
@@ -41,6 +54,22 @@ export default function FoodPage() {
     };
     fetchFoods();
   }, []);
+
+  useEffect(() => {
+    localStorage.setItem("cart", JSON.stringify(cartItems));
+  }, [cartItems]);
+
+  useEffect(() => {
+    localStorage.setItem("wishlist", JSON.stringify(wishlistItems));
+  }, [wishlistItems]);
+
+  const handleAddToCart = (item: Food) => {
+    setCartItems([...cartItems, { ...item, quantity: 1 }]);
+  };
+
+  const handleAddToWishlist = (item: Food) => {
+    setWishlistItems([...wishlistItems, { ...item, quantity: 1 }]);
+  };
 
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
@@ -114,27 +143,31 @@ export default function FoodPage() {
           {/* Food Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {food.map((food) => (
-              <Link key={food.slug} href={`/Shop/${food.slug}`} passHref>
-                <div className="cursor-pointer">
-                  {/* Image */}
-                  <Image
-                    src={food.imageUrl}
-                    alt={food.name}
-                    width={400}
-                    height={300}
-                    className="mb-1 w-full h-auto object-cover rounded-lg shadow-lg hover:transition duration-300 transform hover:scale-95"
-                  />
-                  {/* Food Name */}
-                  <h3 className="text-lg font-bold mb-2">{food.name}</h3>
-                  {/* Price & Discount */}
-                  <div className="flex items-center gap-4 mb-4">
-                    <p className="text-brand font-semibold">${food.price}</p>
-                    {food.originalPrice && (
-                      <p className="line-through text-gray-600">${food.originalPrice}</p>
-                    )}
+              <div key={food.slug} className="cursor-pointer">
+                <Link href={`/Shop/${food.slug}`} passHref>
+                  <div>
+                    {/* Image */}
+                    <Image
+                      src={food.imageUrl}
+                      alt={food.name}
+                      width={400}
+                      height={300}
+                      className="mb-1 w-full h-auto object-cover rounded-lg shadow-lg hover:transition duration-300 transform hover:scale-95"
+                    />
+                    {/* Food Name */}
+                    <h3 className="text-lg font-bold mb-2">{food.name}</h3>
+                    {/* Price & Discount */}
+                    <div className="flex items-center gap-4 mb-4">
+                      <p className="text-brand font-semibold">${food.price}</p>
+                      {food.originalPrice && (
+                        <p className="line-through text-gray-600">${food.originalPrice}</p>
+                      )}
+                    </div>
                   </div>
-                </div>
-              </Link>
+                </Link>
+                <button onClick={() => handleAddToCart(food)} className="text-blue-500">Add to Cart</button>
+                <button onClick={() => handleAddToWishlist(food)} className="text-red-500">Add to Wishlist</button>
+              </div>
             ))}
           </div>
 

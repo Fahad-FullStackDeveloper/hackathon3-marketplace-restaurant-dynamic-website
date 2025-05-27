@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import Navbar from "../components/Navbar";
+import Link from "next/link";
 
 interface CartItem {
   id: number;
@@ -14,46 +15,65 @@ interface CartItem {
 
 const ShoppingCart: React.FC = () => {
   const [cartItems, setCartItems] = useState<CartItem[]>([
-    {
-      id: 1,
-      name: "Burger",
-      price: 5,
-      quantity: 1,
-      rating: 5,
-      image: "/images/burger.png",
-    },
-    {
-      id: 2,
-      name: "Fresh Lime",
-      price: 8,
-      quantity: 1,
-      rating: 4,
-      image: "/images/Drink.png",
-    },
-    {
-      id: 3,
-      name: "Pizza",
-      price: 26,
-      quantity: 1,
-      rating: 3,
-      image: "/images/pizza.png",
-    },
-    {
-      id: 4,
-      name: "Chocolate Muffin",
-      price: 6,
-      quantity: 1,
-      rating: 5,
-      image: "/images/3.Dessert.png",
-    },
-    {
-      id: 5,
-      name: "Cheese Butter",
-      price: 28,
-      quantity: 1,
-      rating: 4,
-      image: "/images/dish9.png",
-    },
+    data.shoppingCart.map((item) => ({
+      id: item.id,
+      name: item.name,
+      price: item.price,
+      quantity: item.quantity,
+      rating: item.rating,
+      image: item.image,
+    })),
+    
+    // {
+    //   id: 1,
+    //   name: "Burger",
+    //   price: 5,
+    //   quantity: 1,
+    //   rating: 5,
+    //   image: "/images/burger.png",
+    // },
+    // {
+    //   id: 2,
+    //   name: "Fresh Lime",
+    //   price: 8,
+    //   quantity: 1,
+    //   rating: 4,
+    //   image: "/images/Drink.png",
+    // },
+    // {
+    //   id: 3,
+    //   name: "Pizza",
+    //   price: 26,
+    //   quantity: 1,
+    //   rating: 3,
+    //   image: "/images/pizza.png",
+    // },
+    // {
+    //   id: 4,
+    //   name: "Chocolate Muffin",
+    //   price: 6,
+    //   quantity: 1,
+    //   rating: 5,
+    //   image: "/images/3.Dessert.png",
+    // },
+    // {
+    //   id: 5,
+    //   name: "Cheese Butter",
+    //   price: 28,
+    //   quantity: 1,
+    //   rating: 4,
+    //   image: "/images/dish9.png",
+    // },
+
+        // // Add your favorite items here!
+    // // Each item should have id, name, price, quantity, rating, and image properties.
+    // // You can add more items or remove existing ones to customize your shopping cart.
+    // // Make sure to update the price and rating values to match the actual prices and ratings of your items.
+    // // You can also add more images to the "/images" folder to represent your items.
+    // // Make sure to replace "/images/burger.png", "/images/Drink.png", "/images/pizza.png", "/images/3.Dessert.png", and "/images/cheeseButter.png" with the actual paths to your images.
+    // // Make sure to replace the item names and prices with the actual names and prices of your items.
+    // // Make sure to replace the image paths with the actual paths to your images.
+
   ]);
 
   const handleQuantityChange = (id: number, delta: number) => {
@@ -219,9 +239,13 @@ const ShoppingCart: React.FC = () => {
                 <span>${calculateTotal()}</span>
               </p>
             </div>
-            <button className="bg-brand text-white w-full py-2 mt-4 rounded text-sm sm:text-base">
-              Proceed to Checkout
-            </button>
+
+            {/* Checkout Button */}
+            <Link href="/Checkout">
+              <button className="bg-brand text-white w-full py-2 mt-4 rounded text-sm sm:text-base">
+                Proceed to Checkout
+              </button>
+            </Link>
           </div>
         </div>
       </div>

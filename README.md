@@ -7,6 +7,14 @@ Foodtuck is a modern restaurant website built with Next.js 14, offering a seamle
 
 ### Current Version: 1.0.0
 
+### Version 1.0.1
+- Fixed minor bugs in the shopping cart
+- Improved performance of the chef profiles page
+
+### Version 1.1.0
+- Added new feature: Real-time order tracking
+- Updated dependencies to the latest versions
+
 ## Tech Stack
 - **Framework:** Next.js 14
 - **Language:** TypeScript
